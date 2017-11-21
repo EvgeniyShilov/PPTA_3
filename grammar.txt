@@ -1,0 +1,7 @@
+S->!H
+H->aG|bM|cL
+L->aG|bM|cH
+G->!X|1G|0G
+M->!X|1M|0M
+F->aG|!S
+K->aM|!S
