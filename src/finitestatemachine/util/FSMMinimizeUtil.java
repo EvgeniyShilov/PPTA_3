@@ -16,7 +16,7 @@ public class FSMMinimizeUtil {
         Map<Set<Character>, Character> newNotations = NewNotationsProvider.forEqualStates(equalStates, finiteStateMachine.getStates());
         List<TransitionFunction> transitionFunctions = replaceWithNewNotations(finiteStateMachine, newNotations);
         FiniteStateMachine result = new FiniteStateMachine();
-        result.setFiniteStates(FSMBuilder.getFiniteStates(transitionFunctions));
+        result.setFiniteStates(finiteStateMachine.getFiniteStates());
         result.setTransitionFunctions(transitionFunctions);
         result.setStates(FSMBuilder.getStates(transitionFunctions));
         result.setInitialStates(finiteStateMachine.getInitialStates());
@@ -70,7 +70,7 @@ public class FSMMinimizeUtil {
         Set<Group> groupsStep;
         while (true) {
             Map<TransitionFunctionInput, Group> table = getTransitionTable(finiteStateMachine, groups);
-            groupsStep = splitIntoGroups(table);
+            groupsStep = splitIntoGroups(table, groups, finiteStateMachine.getInputSymbols());
             if (groups.equals(groupsStep)) break;
             else groups = groupsStep;
         }
@@ -80,19 +80,51 @@ public class FSMMinimizeUtil {
         return equalStatesList;
     }
 
-    private static Set<Group> splitIntoGroups(Map<TransitionFunctionInput, Group> table) {
+    private static Set<Group> splitIntoGroups(Map<TransitionFunctionInput, Group> table,
+                                              Set<Group> oldGroups,
+                                              Set<Character> inputSignals) {
         Set<Group> groups = new HashSet<>();
-        for (Map.Entry<TransitionFunctionInput, Group> outer : table.entrySet()) {
-            Set<Character> states = new HashSet<>();
-            states.add((Character) outer.getKey().getState());
-            for (Map.Entry<TransitionFunctionInput, Group> inner : table.entrySet()) {
-                if (outer.equals(inner)) continue;
-                if (inner.getKey().getSignal().equals(outer.getKey().getSignal()) &&
-                        inner.getValue().getNumber() == (outer.getValue().getNumber()))
-                    states.add((Character) inner.getKey().getState());
+        for (Group oldGroup : oldGroups)
+            for (Character state : oldGroup.getStates()) {
+                Set<Character> newGroup = new HashSet<>();
+                for (Character otherState : oldGroup.getStates()) {
+                    boolean isEqual = true;
+                    for (Character signal : inputSignals) {
+                        Map.Entry<TransitionFunctionInput, Group> leftFunction = null;
+                        for (Map.Entry<TransitionFunctionInput, Group> entry : table.entrySet())
+                            if (entry.getKey().getSignal().equals(signal) && entry.getKey().getState().equals(state)) {
+                                leftFunction = entry;
+                                break;
+                            }
+                        Map.Entry<TransitionFunctionInput, Group> rightFunction = null;
+                        for (Map.Entry<TransitionFunctionInput, Group> entry : table.entrySet())
+                            if (entry.getKey().getSignal().equals(signal) && entry.getKey().getState().equals(otherState)) {
+                                rightFunction = entry;
+                                break;
+                            }
+                        if (leftFunction != null || rightFunction != null) {
+                            if (leftFunction == null || rightFunction == null ||
+                                    leftFunction.getValue().getNumber() != rightFunction.getValue().getNumber()) {
+                                isEqual = false;
+                                break;
+                            }
+                        }
+                    }
+                    if (isEqual) newGroup.add(otherState);
+                }
+                groups.add(new Group(newGroup));
             }
-            if (states.size() != 1) groups.add(new Group(states));
-        }
+//        for (Map.Entry<TransitionFunctionInput, Group> outer : table.entrySet()) {
+//            Set<Character> states = new HashSet<>();
+//            states.add((Character) outer.getKey().getState());
+//            for (Map.Entry<TransitionFunctionInput, Group> inner : table.entrySet()) {
+//                if (outer.equals(inner)) continue;
+//                if (inner.getKey().getSignal().equals(outer.getKey().getSignal()) &&
+//                        inner.getValue().getNumber() == (outer.getValue().getNumber()))
+//                    states.add((Character) inner.getKey().getState());
+//            }
+//            if (states.size() != 1) groups.add(new Group(states));
+//        }
         return groups;
     }
 

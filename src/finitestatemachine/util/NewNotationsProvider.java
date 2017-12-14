@@ -13,9 +13,11 @@ public class NewNotationsProvider {
                                                                 Set<Character> alreadyUsed) {
         Map<Set<Character>, Character> result = new HashMap<>();
         for (Set<Character> equalStates : equalsStatesList) {
-            Character newStateLetter = RandomCharacterUtil.getRandom(alreadyUsed);
-            alreadyUsed.add(newStateLetter);
-            result.put(equalStates, newStateLetter);
+            if (equalStates.size() != 1) {
+                Character newStateLetter = RandomCharacterUtil.getRandom(alreadyUsed);
+                alreadyUsed.add(newStateLetter);
+                result.put(equalStates, newStateLetter);
+            } else result.put(equalStates, (Character) equalStates.toArray()[0]);
         }
         return result;
     }

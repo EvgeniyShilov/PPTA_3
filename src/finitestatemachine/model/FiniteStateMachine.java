@@ -60,4 +60,8 @@ public class FiniteStateMachine {
     public void setFiniteStates(Set<Character> finiteStates) {
         this.finiteStates = finiteStates;
     }
+
+    public void addState(Character character) {
+        states.add(character);
+    }
 }

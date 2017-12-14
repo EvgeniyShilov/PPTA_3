@@ -1,5 +1,6 @@
 import finitestatemachine.model.FiniteStateMachine;
 import finitestatemachine.util.FSMBuilder;
+import finitestatemachine.util.FSMDetermineUtil;
 import finitestatemachine.util.FSMMinimizeUtil;
 import finitestatemachine.util.GraphDrawerUtil;
 import grammar.model.Grammar;
@@ -14,6 +15,7 @@ public class App {
         Grammar grammar = GrammarUtil.fromFile(filePath);
         FiniteStateMachine finiteStateMachine = FSMBuilder.buildFromGrammar(grammar);
         GraphDrawerUtil.drawGraph(finiteStateMachine);
+        //FSMDetermineUtil.determine(finiteStateMachine);
         FiniteStateMachine minimized = FSMMinimizeUtil.minimize(finiteStateMachine);
         GraphDrawerUtil.drawGraph(minimized);
     }
